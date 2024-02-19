@@ -1,0 +1,21 @@
+// Hook for fetching coin data from CoinGecko API
+import { useState, useEffect } from 'react';
+import { CoinGeckoApi } from 'path/to/coinGeckoApi'; // Assuming it's an API utility
+
+const useCoinData = () => {
+  const [coinData, setCoinData] = useState({});
+
+  useEffect(() => {
+    CoinGeckoApi.fetchCoinData()
+      .then((data) => {
+        setCoinData(data?.market_data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
+
+  return coinData;
+};
+
+export default useCoinData;

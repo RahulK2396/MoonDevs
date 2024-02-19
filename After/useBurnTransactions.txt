@@ -1,0 +1,14 @@
+// Hook for managing burn transactions
+import { useState } from 'react';
+
+const useBurnTransactions = () => {
+  const [burnTxHash, setBurnTxHash] = useState(null);
+
+  const setBurnTransactionHash = (hash) => {
+    setBurnTxHash(hash);
+  };
+
+  return { burnTxHash, setBurnTransactionHash };
+};
+
+export default useBurnTransactions;

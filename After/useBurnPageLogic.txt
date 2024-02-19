@@ -1,0 +1,76 @@
+// Hook for managing burn page logic
+import { useState } from 'react';
+import { Contract } from 'ethers';
+import { parseEther } from 'ethers/lib/utils';
+import useCoinData from './useCoinData';
+import useBurnTransactions from './useBurnTransactions';
+
+const useBurnPageLogic = () => {
+  const [burnAmount, setBurnAmount] = useState('');
+  const [txButton, setTxButton] = useState(BurnTxProgress.default);
+  const [txProgress, setTxProgress] = useState(false);
+  const { burnTxHash, setBurnTransactionHash } = useBurnTransactions();
+  const coinData = useCoinData();
+
+ const executeBurn = async () => {
+    if (!isWalletConnected) {
+      openConnectModal();
+    }
+    if (burnAmount === "") {
+      console.log("Enter amount to migrate");
+      showToast("Enter amount to migrate", ToastSeverity.warning);
+      return;
+    }
+    const newTokenAddress = fetchAddressForChain(walletChain?.id, "newToken");
+    const oftTokenContract = new Contract(
+      newTokenAddress,
+      oftAbi,
+      ethersSigner
+    );
+    let amount = parseEther(burnAmount);
+    setTxButton(BurnTxProgress.burning);
+    setTxProgress(true);
+    try {
+      const burnTx = await oftTokenContract.burn(
+        //tokenAddress,
+        amount
+      );
+      setBurnTxHash(burnTx.hash);
+      console.log(burnTx, burnTx.hash);
+      await burnTx.wait();
+      setTxButton(BurnTxProgress.default);
+      setTxProgress(false);
+      refetchTransactions();
+      fetchSupplies();
+    } catch (err) {
+      console.log(err);
+      setTxButton(BurnTxProgress.default);
+      setTxProgress(false);
+      showToast("Burn Failed!", ToastSeverity.error);
+      return;
+    }
+  };
+
+const onChangeBurnAmount = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value == "") setBurnAmount("");
+    if (isNaN(parseFloat(e.target.value))) return;
+    setBurnAmount(e.target.value);
+  };
+
+
+  return {
+    burnAmount,
+    setBurnAmount,
+    txButton,
+    setTxButton,
+    txProgress,
+    setTxProgress,
+    burnTxHash,
+    executeBurn,
+    onChangeBurnAmount,
+    coinData,
+    setBurnTransactionHash
+  };
+};
+
+export default useBurnPageLogic;
